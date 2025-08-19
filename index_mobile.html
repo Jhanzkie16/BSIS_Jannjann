@@ -1,0 +1,524 @@
+<?php
+// index_mobile.php
+// Server-side UA check: redirect Windows visitors back to desktop (index3.html)
+$userAgent = $_SERVER['HTTP_USER_AGENT'] ?? '';
+if (stripos($userAgent, 'Windows') !== false) {
+    header('Location: index3.html');
+    exit;
+}
+?>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Jannjann Adventures — Mobile</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="description" content="Jannjann Adventures — mobile site for Philippine mountain treks."/>
+  <meta name="format-detection" content="telephone=no" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;600&family=Marcellus&display=swap" rel="stylesheet">
+  <style>
+    /* -----------------------
+       Mobile-first styles
+       ----------------------- */
+    :root{
+      --bg:#ffffff;
+      --muted:#6b7280;
+      --brand:#0d6efd;
+      --dark:#111827;
+      --card:#ffffff;
+      --glass: rgba(255,255,255,0.85);
+      --radius:12px;
+      --gap:12px;
+    }
+    html,body{height:100%; margin:0; font-family: "Jost", system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial; color:var(--dark); background:var(--bg); -webkit-text-size-adjust:100%;}
+    a{color:inherit; text-decoration:none;}
+    .container{padding:16px; max-width:980px; margin:0 auto;}
+    header.navbar{display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:linear-gradient(180deg,#fff, #fbfbfb); position:sticky; top:0; z-index:1200; border-bottom:1px solid #eee;}
+    .brand {display:flex; gap:8px; align-items:center;}
+    .brand .name {font-family: "Marcellus", serif; font-size:20px; font-weight:700; line-height:1;}
+    .brand .sub {font-size:11px; color:var(--muted); margin-top:2px;}
+    .nav-actions {display:flex; gap:10px; align-items:center;}
+    button.icon {background:transparent; border:0; padding:8px; border-radius:8px; display:inline-flex; align-items:center; justify-content:center;}
+    button.icon:active{opacity:.75}
+    /* search popup */
+    .overlay {position:fixed; inset:0; display:none; align-items:flex-start; justify-content:center; z-index:1300; padding:18px; background:rgba(0,0,0,0.5);}
+    .search-box {background:#fff; width:100%; max-width:760px; border-radius:12px; padding:12px; box-shadow:0 6px 30px rgba(0,0,0,0.12);}
+    .search-box input{width:100%; padding:12px 44px 12px 12px; border-radius:10px; border:1px solid #e5e7eb; font-size:15px;}
+    .search-button {position:relative;}
+    .search-button svg{position:absolute; right:12px; top:12px; width:20px; height:20px; color:var(--muted);}
+
+    /* offcanvas (cart/menu) */
+    .panel {position:fixed; top:0; right:-100%; height:100vh; width:92%; max-width:420px; background:#fff; box-shadow:-10px 0 30px rgba(0,0,0,0.12); z-index:1350; transition:right .32s ease; padding:18px; overflow:auto;}
+    .panel.show {right:0;}
+    .panel .close-btn {float:right; border:0; background:transparent; font-size:18px;}
+    .badge-pill {background:var(--brand); color:#fff; padding:6px 10px; border-radius:999px; font-weight:600; font-size:13px;}
+
+    /* hero carousel */
+    .hero {border-radius:12px; overflow:hidden; position:relative; background:#000;}
+    .hero img {display:block; width:100%; height:220px; object-fit:cover;}
+    .hero .caption {position:absolute; left:12px; bottom:12px; right:12px; color:#fff; text-shadow:0 6px 20px rgba(0,0,0,0.6);}
+    .hero .title {font-weight:700; font-size:18px; margin:0 0 6px;}
+    .hero .subtitle {font-size:13px; color:rgba(255,255,255,0.92); margin:0;}
+
+    .dots {display:flex; gap:6px; justify-content:center; margin-top:10px;}
+    .dot {width:8px; height:8px; border-radius:99px; background:rgba(0,0,0,0.25);}
+    .dot.active {background:var(--brand);}
+
+    /* features grid */
+    .features {display:flex; gap:12px; margin-top:12px;}
+    .feature {flex:1; background:#fff; border-radius:10px; padding:12px; text-align:center; box-shadow:0 4px 18px rgba(0,0,0,0.06);}
+    .feature svg{width:28px; height:28px; color:var(--brand); margin-bottom:8px;}
+
+    /* categories */
+    .categories {display:flex; gap:10px; margin-top:14px; overflow:hidden;}
+    .cat {flex:1 1 0; border-radius:10px; overflow:hidden; background:#fff; box-shadow:0 6px 20px rgba(0,0,0,0.04);}
+    .cat img {width:100%; height:110px; object-fit:cover; display:block;}
+    .cat .label {padding:8px; text-align:center; font-weight:600; font-size:13px;}
+
+    /* collection */
+    .collection {margin-top:14px; display:flex; flex-direction:column; gap:10px;}
+    .collection .card {display:flex; gap:10px; background:#fff; border-radius:12px; overflow:hidden; box-shadow:0 6px 30px rgba(0,0,0,0.05);}
+    .collection .thumb {width:46%; min-width:120px; height:140px; object-fit:cover;}
+    .collection .content {padding:12px; flex:1;}
+
+    /* product carousel (scroll-snap) */
+    .product-row {margin-top:12px; display:flex; gap:12px; overflow-x:auto; scroll-snap-type:x mandatory; padding-bottom:8px; -webkit-overflow-scrolling:touch;}
+    .product {min-width:200px; scroll-snap-align:center; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,0.05);}
+    .product img{width:100%; height:120px; object-fit:cover;}
+    .product .pbody{padding:10px;}
+    .carousel-controls{display:flex; justify-content:space-between; margin-top:10px;}
+
+    /* video card */
+    .video-card{position:relative; border-radius:12px; overflow:hidden; background:#000;}
+    .video-card img{width:100%; height:160px; object-fit:cover; display:block;}
+    .play-badge{position:absolute; left:12px; bottom:12px; background:rgba(0,0,0,0.6); color:#fff; padding:8px 10px; border-radius:999px; display:inline-flex; gap:8px; align-items:center;}
+
+    /* testimonials carousel */
+    .testimonials {margin-top:12px;}
+    .testi {background:#fff; border-radius:10px; padding:12px; box-shadow:0 6px 20px rgba(0,0,0,0.05);}
+    .testi .author{font-size:12px; color:var(--muted); margin-top:8px;}
+
+    /* profile / about / newsletter / footer */
+    .profile-card {background:#fff; border-radius:12px; padding:12px; box-shadow:0 6px 20px rgba(0,0,0,0.05); display:flex; gap:12px; align-items:center;}
+    .profile-card img{width:76px; height:76px; border-radius:999px; object-fit:cover;}
+    .about {background:#fff; border-radius:12px; padding:12px; box-shadow:0 6px 20px rgba(0,0,0,0.05);}
+    .newsletter {background:#fff; border-radius:12px; padding:12px; box-shadow:0 6px 20px rgba(0,0,0,0.05); margin-top:12px;}
+    .footer {margin-top:14px; font-size:13px; color:var(--muted);}
+
+    /* utility */
+    .muted {color:var(--muted);}
+    .btn{display:inline-block; padding:10px 12px; border-radius:10px; background:var(--brand); color:#fff; font-weight:600; border:0;}
+    .btn.outline{background:transparent; color:var(--brand); border:1px solid #e6e6e6;}
+    .small{font-size:13px;}
+    @media (min-width:600px){
+      .hero img{height:260px;}
+      .product img{height:140px;}
+      .collection .thumb{height:180px;}
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="navbar" role="banner">
+    <div class="brand" aria-hidden="false">
+      <!-- simple inline SVG brand -->
+      <svg width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><rect width="36" height="36" rx="6" fill="#0d6efd"/></svg>
+      <div>
+        <div class="name">JANNJANN</div>
+        <div class="sub">ADVENTURES</div>
+      </div>
+    </div>
+
+    <div class="nav-actions">
+      <button class="icon" id="openSearch" aria-label="Search"><svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68zM11 18a7 7 0 1 1 7-7 7 7 0 0 1-7 7z"/></svg></button>
+
+      <button class="icon" id="openCart" aria-label="Open My Trips"><svg width="20" height="20" viewBox="0 0 24 24"><path fill="currentColor" d="M7 4h-2l-1 2h2l3.6 7.59-.9 1.4C9.01 15.99 9 16.5 9 17c0 1.1.9 2 2 2h8v-2H11.42c-.14 0-.25-.11-.28-.25l.03-.12L12 15h6a1 1 0 0 0 .9-.55l3-6A1 1 0 0 0 21 7H8.21l-.94-2z"/></svg></button>
+
+      <button class="icon" id="openMenu" aria-label="Menu"><svg width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" d="M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h18v2H3v-2z"/></svg></button>
+    </div>
+  </header>
+
+  <!-- search overlay -->
+  <div class="overlay" id="overlaySearch" aria-hidden="true">
+    <div class="search-box" role="dialog" aria-modal="true" aria-label="Search">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <strong>Search trips</strong>
+        <button class="icon" id="closeSearch" aria-label="Close search"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M18.3 5.71L12 12.01 5.7 5.71 4.29 7.12 10.59 13.41 4.29 19.71 5.7 21.12 12 14.82 18.3 21.12 19.71 19.71 13.41 13.41 19.71 7.12z"/></svg></button>
+      </div>
+      <form role="search" style="margin-top:10px;">
+        <div style="position:relative;">
+          <input id="searchInput" placeholder="Search mountains, treks, packages..." aria-label="Search" />
+          <div class="search-button"><svg viewBox="0 0 24 24" width="20" height="20"><path fill="currentColor" d="M21.71 20.29L18 16.61A9 9 0 1 0 16.61 18l3.68 3.68zM11 18a7 7 0 1 1 7-7 7 7 0 0 1-7 7z"/></svg></div>
+        </div>
+      </form>
+
+      <h4 style="margin:12px 0 6px 0;">Browse Mountain Adventures</h4>
+      <ul style="padding-left:14px; margin:0; color:var(--muted);">
+        <li><a href="#">Mountain Expeditions</a></li>
+        <li><a href="#">Highland Treks</a></li>
+        <li><a href="#">Volcano Adventures</a></li>
+        <li><a href="#">Cordillera Tours</a></li>
+        <li><a href="#">Family Mountain Hikes</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- offcanvas cart -->
+  <aside class="panel" id="panelCart" aria-hidden="true" aria-label="My Trips">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+      <strong>Your Selected Trips</strong>
+      <span class="badge-pill">2</span>
+    </div>
+    <div>
+      <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0;">
+        <div>
+          <div style="font-weight:600">Cayapa Falls</div>
+          <div class="muted small">3 Days, 2 Nights</div>
+        </div>
+        <div class="muted">₱2,500</div>
+      </div>
+      <div style="display:flex; justify-content:space-between; padding:10px 0; border-bottom:1px solid #f0f0f0;">
+        <div>
+          <div style="font-weight:600">Skyline Quirino</div>
+          <div class="muted small">4 Days, 3 Nights</div>
+        </div>
+        <div class="muted">₱3,000</div>
+      </div>
+
+      <div style="display:flex; justify-content:space-between; padding:12px 0; font-weight:700;">
+        <div>Total (PHP)</div>
+        <div>₱5,500</div>
+      </div>
+
+      <button class="btn" style="width:100%; margin-top:6px;">Proceed to Booking</button>
+    </div>
+  </aside>
+
+  <!-- offcanvas menu -->
+  <aside class="panel" id="panelMenu" aria-hidden="true" aria-label="Menu">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <strong>Menu</strong>
+      <button class="icon" id="closeMenu" aria-label="Close menu"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="currentColor" d="M18.3 5.71L12 12.01 5.7 5.71 4.29 7.12 10.59 13.41 4.29 19.71 5.7 21.12 12 14.82 18.3 21.12 19.71 19.71 13.41 13.41 19.71 7.12z"/></svg></button>
+    </div>
+    <nav style="margin-top:12px;">
+      <ul style="list-style:none; padding:0; margin:0; display:flex; flex-direction:column; gap:8px;">
+        <li><a href="#billboard">Home</a></li>
+        <li><a href="#skyline-video">Skyline</a></li>
+        <li><a href="#cayapa-falls">Cayapa Falls</a></li>
+        <li><a href="#best-sellers">Popular Treks</a></li>
+        <li><a href="#about">About</a></li>
+        <li><a href="#profile-page">Profile</a></li>
+        <li><a href="#apply-book">Contact</a></li>
+      </ul>
+    </nav>
+  </aside>
+
+  <!-- main content -->
+  <main class="container" id="main">
+    <!-- billboard / hero carousel -->
+    <section id="billboard" style="margin-top:12px;">
+      <div class="hero" id="hero">
+        <img src="images/c/img1.jpg" alt="Majestic Philippine Mountains" data-caption-title="Discover Quirino’s Hidden Wonders" data-caption-sub="Journey through Quirino’s majestic landscapes" />
+        <div class="caption">
+          <div class="title">Discover Quirino’s Hidden Wonders</div>
+          <div class="subtitle">Journey through Quirino’s majestic landscapes, rich culture, and serene escapes.</div>
+        </div>
+      </div>
+      <div class="dots" id="heroDots" aria-hidden="true"></div>
+    </section>
+
+    <!-- features -->
+    <section class="features" aria-labelledby="featuresTitle" style="margin-top:14px;">
+      <div class="feature">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M2 3v2h2l3.6 7.59-1.35 2.44C6.52 16.37 7 17 8 17h10v-2H8.42c-.14 0-.25-.11-.28-.25L8 14h7.55A2 2 0 0 0 17 12.6L14 6H7V4H2z"/></svg>
+        <div class="small">Easy Trip Planning</div>
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2l3 7h7l-5.5 4 2 7L12 15l-6.5 5 2-7L2 9h7z"/></svg>
+        <div class="small">Expert Mountain Guides</div>
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 2C8.13 2 5 5.13 5 9c0 7 7 13 7 13s7-6 7-13c0-3.87-3.13-7-7-7z"/></svg>
+        <div class="small">Customizable Treks</div>
+      </div>
+      <div class="feature">
+        <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 12c2.21 0 4-1.79 4-4V4h-8v4c0 2.21 1.79 4 4 4zM6 20v-2c0-2.21 3.58-4 6-4s6 1.79 6 4v2H6z"/></svg>
+        <div class="small">24/7 Adventure Support</div>
+      </div>
+    </section>
+
+    <!-- categories -->
+    <section class="categories" aria-label="Categories">
+      <a class="cat" href="#"><img src="images/c/sky.jpg" alt="Sea of Clouds"><div class="label">Sea of Clouds</div></a>
+      <a class="cat" href="#"><img src="images/c/img13.jpg" alt="Cooking Ina's Kalapaw"><div class="label">Cooking Ina's Kalapaw</div></a>
+      <a class="cat" href="#"><img src="images/c/img6.jpg" alt="Suyo Animal Farm"><div class="label">Suyo Animal Farm</div></a>
+    </section>
+
+    <!-- collection (Cayapa Falls) -->
+    <section class="collection" id="cayapa-falls" aria-labelledby="cayapaTitle">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0;">Explore Peaks</h3>
+      </div>
+
+      <div class="card" style="margin-top:8px;">
+        <div style="display:flex; gap:10px; align-items:stretch;">
+          <img class="thumb" src="images/c/cayapa.jpg" alt="Cayapa Falls" />
+          <div class="content">
+            <h4 style="margin:0 0 6px 0;">Cayapa Falls</h4>
+            <p class="small muted" style="margin:0 0 8px;">Hidden within the lush forests of Quirino, Cayapa Falls is a breathtaking cascade that flows gracefully into crystal-clear pools. Surrounded by towering cliffs and vibrant greenery, it offers a serene escape for nature lovers.</p>
+            <a href="#apply-book" class="btn">Discover Cayapa Falls</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- product carousel (scroll-snap) -->
+    <section id="best-sellers" style="margin-top:12px;">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0;">Most Popular Mountain Treks</h3>
+        <a class="small muted" href="#">View All</a>
+      </div>
+
+      <div class="product-row" id="productRow" tabindex="0" aria-label="Popular treks">
+        <article class="product" role="article">
+          <img src="images/c/img22.jpg" alt="Skyline">
+          <div class="pbody">
+            <div style="font-weight:700;">Skyline</div>
+            <div class="muted small">₱20.00 Entrance Fee</div>
+          </div>
+        </article>
+
+        <article class="product" role="article">
+          <img src="images/c/img21.jpg" alt="Pantar River">
+          <div class="pbody">
+            <div style="font-weight:700;">Pantar River</div>
+            <div class="muted small">Free Entrance</div>
+          </div>
+        </article>
+
+        <article class="product" role="article">
+          <img src="images/c/img17.jpg" alt="Crocodile Mountain">
+          <div class="pbody">
+            <div style="font-weight:700;">Crocodile Mountain</div>
+            <div class="muted small">Free Entrance</div>
+          </div>
+        </article>
+
+        <article class="product" role="article">
+          <img src="images/c/img18.jpg" alt="Karayan Libeg">
+          <div class="pbody">
+            <div style="font-weight:700;">Karayan Libeg</div>
+            <div class="muted small">Free Entrance</div>
+          </div>
+        </article>
+
+        <article class="product" role="article">
+          <img src="images/c/6.jpg" alt="Quirino Long Bridge">
+          <div class="pbody">
+            <div style="font-weight:700;">Quirino Long Bridge</div>
+            <div class="muted small">Free Tour</div>
+          </div>
+        </article>
+      </div>
+      <div class="carousel-controls small muted"><span>Swipe →</span><span>Tap a card to open</span></div>
+    </section>
+
+    <!-- video -->
+    <section id="skyline-video" style="margin-top:12px;">
+      <div class="video-card">
+        <a href="https://www.youtube.com/watch?v=your-philippine-mountain-video-id" target="_blank" rel="noopener" aria-label="Watch video">
+          <img src="images/c/skyline2.jpg" alt="Skyline Video Thumbnail">
+          <div class="play-badge"><svg width="16" height="16" viewBox="0 0 24 24"><path fill="currentColor" d="M8 5v14l11-7z"/></svg><span>Play Video</span></div>
+        </a>
+      </div>
+    </section>
+
+    <!-- testimonials -->
+    <section class="testimonials" aria-label="Testimonials" style="margin-top:12px;">
+      <h3 style="margin:0 0 8px 0;">What our adventurers say</h3>
+      <div id="testiWrap">
+        <div class="testi" data-author="Th3LifeOfJack — Jul 29, 2020">"provides you with a beautiful mountain view or the sea of clouds."<div class="author muted" style="margin-top:8px;">Th3LifeOfJack — Jul 29, 2020</div></div>
+        <div class="testi" data-author="CGVTheExplorer — Jan 25, 2025" style="display:none;">"Sunset time is also a perfect time to visit Skyline View Deck in Quirino, Ilocos Sur!"<div class="author muted" style="margin-top:8px;">CGVTheExplorer — Jan 25, 2025</div></div>
+        <div class="testi" data-author="Laurence Aguilar — Mar 23, 2025" style="display:none;">"On clear mornings, visitors are often greeted by a mesmerizing sea of clouds."<div class="author muted" style="margin-top:8px;">Laurence Aguilar — Mar 23, 2025</div></div>
+      </div>
+    </section>
+
+    <!-- profile -->
+    <section id="profile-page" style="margin-top:12px;">
+      <div class="profile-card">
+        <img src="images/c/img2.jpg" alt="Jannjann Adventures">
+        <div>
+          <div style="font-weight:700;">Jannjann Adventures</div>
+          <div class="muted small">Travel Blogger · Mountain Guide · Storyteller</div>
+          <div class="muted small" style="margin-top:6px;">Poblacion, Quirino, Ilocos Sur • <a href="mailto:info@Jannjannadventures.ph">info@Jannjannadventures.ph</a></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- about -->
+    <section id="about" class="about" style="margin-top:12px;">
+      <h3 style="margin:0 0 6px 0;">Hi — I’m <strong>Christian Jann Lagadan</strong></h3>
+      <div class="small muted">3rd-year Information Systems student · Freelance Developer</div>
+      <p class="small" style="margin-top:8px;">I build practical, easy-to-use systems for real businesses and students. I focus on delivering clean, maintainable software that solves everyday problems — from POS systems to barangay census systems and capstone projects.</p>
+      <div style="display:flex; gap:8px; margin-top:8px;">
+        <a class="btn outline" href="mailto:your@email.com">Contact Me</a>
+        <a class="btn" href="#">View Portfolio</a>
+      </div>
+    </section>
+
+    <!-- newsletter / apply -->
+    <section id="apply-book" class="newsletter" style="margin-top:12px;">
+      <h3 style="margin:0 0 8px 0;">Apply and Book For Travel Tour Guide</h3>
+      <form id="subscribeForm" style="display:flex; gap:8px; margin-top:8px;">
+        <input id="emailInput" type="email" placeholder="Your Email Address" required style="flex:1; padding:10px; border-radius:10px; border:1px solid #eee;" />
+        <button class="btn" type="submit">Subscribe</button>
+      </form>
+    </section>
+
+    <!-- footer -->
+    <footer class="footer" role="contentinfo">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+          <div style="font-weight:700;">JANNJANN ADVENTURES</div>
+          <div class="muted small">Your gateway to unforgettable Philippine mountain adventures.</div>
+        </div>
+        <div style="text-align:right;">
+          <div class="muted small">Contact: <a href="tel:+639612397172">+63 961 239 7172</a></div>
+          <div class="muted small">Poblacion, Quirino Ilocos Sur</div>
+        </div>
+      </div>
+      <div style="border-top:1px solid #f0f0f0; margin-top:12px; padding-top:10px; display:flex; justify-content:space-between; align-items:center;">
+        <div class="small muted">Trusted Partners • Payment Options (PHP)</div>
+        <div class="small muted">© 2024 JANNJANN Adventures</div>
+      </div>
+    </footer>
+  </main>
+
+  <!-- lightweight JS for interactions + carousels -->
+  <script>
+    // helper
+    function qs(sel, ctx) { return (ctx||document).querySelector(sel); }
+    function qsa(sel, ctx) { return Array.from((ctx||document).querySelectorAll(sel)); }
+
+    // open/close overlays & panels
+    (function(){
+      var overlaySearch = qs('#overlaySearch');
+      var openSearch = qs('#openSearch'), closeSearch = qs('#closeSearch');
+      openSearch && openSearch.addEventListener('click', function(){ overlaySearch.style.display='flex'; overlaySearch.setAttribute('aria-hidden','false'); qs('#searchInput').focus(); });
+      closeSearch && closeSearch.addEventListener('click', function(){ overlaySearch.style.display='none'; overlaySearch.setAttribute('aria-hidden','true'); });
+      overlaySearch && overlaySearch.addEventListener('click', function(e){ if(e.target === overlaySearch){ overlaySearch.style.display='none'; overlaySearch.setAttribute('aria-hidden','true'); } });
+
+      // cart panel
+      var panelCart = qs('#panelCart'), openCart = qs('#openCart');
+      openCart && openCart.addEventListener('click', function(){ panelCart.classList.add('show'); panelCart.setAttribute('aria-hidden','false'); });
+      // menu panel
+      var panelMenu = qs('#panelMenu'), openMenu = qs('#openMenu'), closeMenu = qs('#closeMenu');
+      openMenu && openMenu.addEventListener('click', function(){ panelMenu.classList.add('show'); panelMenu.setAttribute('aria-hidden','false'); });
+      closeMenu && closeMenu.addEventListener('click', function(){ panelMenu.classList.remove('show'); panelMenu.setAttribute('aria-hidden','true'); });
+      // close panels on anchor click (smooth scroll will handle jump)
+      qsa('.panel a').forEach(function(a){ a.addEventListener('click', function(){ panelMenu.classList.remove('show'); panelCart.classList.remove('show'); }); });
+      // allow swipe right to close panels (touch)
+      ['panelMenu','panelCart'].forEach(function(id){
+        var el = qs('#' + id);
+        if(!el) return;
+        var startX=0, dx=0;
+        el.addEventListener('touchstart', function(e){ startX = e.touches[0].clientX; });
+        el.addEventListener('touchmove', function(e){ dx = e.touches[0].clientX - startX; });
+        el.addEventListener('touchend', function(){ if(dx>50) el.classList.remove('show'); dx=0; });
+      });
+    })();
+
+    // HERO carousel (simple)
+    (function(){
+      var hero = qs('#hero');
+      if(!hero) return;
+      var slides = [
+        {img:'images/c/img1.jpg', title:'Grace in Heritage, Power in Hand', text:'Walking the runway with roots and resilience.'},
+        {img:'images/c/img8.jpg', title:'Echoes of Culture, Rhythm of the Gong', text:'Celebrating heritage through the beat of tradition.'},
+        {img:'images/c/img14.jpg', title:'Blooming Elegance in Earthy Hues', text:'Surrounded by brownish blossoms, nature\'s calm.'}
+      ];
+      var idx = 0;
+      var imgEl = hero.querySelector('img');
+      var titleEl = hero.querySelector('.title');
+      var subEl = hero.querySelector('.subtitle');
+      var dotsWrap = qs('#heroDots');
+      function buildDots(){
+        dotsWrap.innerHTML='';
+        slides.forEach(function(_,i){ var d=document.createElement('span'); d.className='dot'+(i===0?' active':''); d.dataset.i=i; d.addEventListener('click', function(){ goTo(i); }); dotsWrap.appendChild(d); });
+      }
+      function render(i){
+        imgEl.src = slides[i].img;
+        titleEl.textContent = slides[i].title;
+        subEl.textContent = slides[i].text;
+        qsa('.dot').forEach(function(d){ d.classList.toggle('active', +d.dataset.i===i); });
+      }
+      function next(){ idx = (idx+1) % slides.length; render(idx); }
+      function goTo(i){ idx = i; render(idx); resetAuto(); }
+      var timer = setInterval(next, 4800);
+      function resetAuto(){ clearInterval(timer); timer = setInterval(next, 4800); }
+      buildDots(); render(0);
+    })();
+
+    // testimonials rotation
+    (function(){
+      var wrap = qs('#testiWrap'); if(!wrap) return;
+      var items = qsa('#testiWrap .testi');
+      var cur = 0;
+      items.forEach((it,i)=>{ if(i!==0) it.style.display='none'; });
+      setInterval(function(){
+        items[cur].style.display='none';
+        cur = (cur+1)%items.length;
+        items[cur].style.display='block';
+      }, 4200);
+    })();
+
+    // product row snap keyboard navigation
+    (function(){
+      var row = qs('#productRow');
+      if(!row) return;
+      // allow left/right arrow to scroll
+      row.addEventListener('keydown', function(e){
+        if(e.key === 'ArrowRight'){ row.scrollBy({left:220, behavior:'smooth'}); }
+        if(e.key === 'ArrowLeft'){ row.scrollBy({left:-220, behavior:'smooth'}); }
+      });
+      // tap on product opens a lightbox (simple alert for demo)
+      qsa('.product').forEach(function(card){
+        card.addEventListener('click', function(){ window.location.href = '#apply-book'; });
+      });
+    })();
+
+    // subscribe form (demo)
+    (function(){
+      var form = qs('#subscribeForm');
+      var email = qs('#emailInput');
+      form && form.addEventListener('submit', function(e){
+        e.preventDefault();
+        if(!email.value || !email.value.includes('@')) { alert('Please enter a valid email.'); email.focus(); return; }
+        // trivial UX: thank you message
+        form.innerHTML = '<div style="padding:12px; text-align:center;">Thanks! We\'ll be in touch. <div class="muted small" style="margin-top:6px;">You signed up: '+(email.value)+'</div></div>';
+      });
+    })();
+
+    // smooth scroll + close panels
+    (function(){
+      document.querySelectorAll('a[href^="#"]').forEach(function(anchor){
+        anchor.addEventListener('click', function(e){
+          var href = this.getAttribute('href');
+          if(!href || href === '#') return;
+          var target = document.querySelector(href);
+          if(target){
+            e.preventDefault();
+            var yOffset = -12;
+            var y = target.getBoundingClientRect().top + window.pageYOffset + yOffset;
+            window.scrollTo({ top:y, behavior:'smooth' });
+          }
+          // close any open panels
+          qsa('.panel.show').forEach(function(p){ p.classList.remove('show'); });
+          qs('#overlaySearch') && (qs('#overlaySearch').style.display='none');
+        });
+      });
+    })();
+  </script>
+</body>
+</html>
