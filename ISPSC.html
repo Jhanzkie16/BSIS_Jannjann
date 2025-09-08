@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ISPSC — (Lagadan, Mobile Preserved)</title>
+
+  <!-- Fonts & Bootstrap -->
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+
+  <style>
+    :root{
+      --accent:#6f42c1;
+      --muted:#6c757d;
+      --gap:16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;margin:0;font-family:"Poppins", "Lucida Sans", sans-serif;-webkit-font-smoothing:antialiased}
+    body{background:linear-gradient(180deg,#f7f9fc 0%, #eef7ff 100%); color:#212529;}
+
+    .app{min-height:100vh;display:flex;flex-direction:column;}
+
+    header.site-header{
+      padding:14px 18px;
+      background:linear-gradient(90deg,var(--accent),#5a31a6);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      box-shadow:0 8px 28px rgba(111,66,193,.08);
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand img{height:56px;width:56px;object-fit:contain;border-radius:8px;background:#fff;padding:4px}
+    .brand h1{margin:0;font-size:1.05rem;font-weight:600}
+    .brand small{opacity:.95;font-weight:400}
+
+    .content-area{flex:1 1 auto;display:flex;gap:var(--gap);padding:var(--gap);align-items:stretch;flex-wrap:nowrap}
+
+    .col-left, .col-center, .col-right{display:flex;flex-direction:column}
+    @media (min-width:768px){
+      .col-left{flex:0 0 25%;max-width:25%}
+      .col-center{flex:0 0 50%;max-width:50%}
+      .col-right{flex:0 0 25%;max-width:25%}
+    }
+    @media (max-width:767.98px){
+      .content-area{flex-direction:column;padding:12px}
+      .col-left,.col-center,.col-right{flex:0 0 auto;max-width:100%}
+    }
+
+    .panel{flex:1 1 auto;overflow:auto;padding:12px;background:transparent}
+    @media (max-width:767.98px){
+      .panel{flex:0 0 auto;overflow:visible;padding:8px}
+    }
+
+    .menu-card{border:0;background:transparent;padding:0}
+    .nav-link{
+      padding:.6rem .9rem;margin-bottom:.5rem;border-radius:.6rem;color:var(--muted);
+      display:flex;align-items:center;gap:.6rem;transition:all .12s;font-weight:600;font-size:.88rem;text-transform:uppercase;
+    }
+    .nav-link i{font-size:1.05rem;color:var(--accent)}
+    .nav-link.active{background:linear-gradient(90deg,var(--accent),#5a31a6);color:#fff;box-shadow:0 8px 18px rgba(111,66,193,.06)}
+    .nav-link.active i{color:#fff}
+
+    .card-hero{background:linear-gradient(180deg,rgba(111,66,193,.95),rgba(97,45,148,.95));color:#fff;border-radius:.8rem}
+    .card{border-radius:.6rem}
+
+    .aside{background:linear-gradient(180deg,#33b5e5,#0099cc);color:#fff;padding:14px;border-radius:.6rem;text-align:center}
+
+    footer.site-footer{padding:12px 18px;background:transparent;color:var(--muted);display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(0,0,0,.04)}
+
+    .page-section{display:none}
+    .page-section.active{display:block}
+
+    /* Dropdown-on-hover small menus for header icons */
+    .dropdown-hover { position: relative; display:inline-block; }
+    .dropdown-hover .dropdown-panel {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      min-width: 220px;
+      background: #fff;
+      color: #212529;
+      border-radius: .5rem;
+      box-shadow: 0 10px 30px rgba(0,0,0,.12);
+      padding: .5rem;
+      z-index: 1200;
+      display: none;
+      font-size: .9rem;
+    }
+    .dropdown-hover .dropdown-panel.show { display:block; }
+    .dropdown-hover .dropdown-panel .item { display:block; padding:.45rem .6rem; border-radius:.4rem; color:#333; text-decoration:none; }
+    .dropdown-hover .dropdown-panel .item:hover { background: rgba(15,15,15,.04); }
+    .dropdown-panel .header { font-weight:700; font-size:.85rem; padding:.25rem .4rem; color:var(--muted); }
+    @media (max-width:767.98px){
+      .dropdown-hover .dropdown-panel { right: auto; left: 0; min-width: 180px; }
+    }
+
+    /* watermark in intro modal */
+    .modal-watermark {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%) rotate(-18deg);
+      font-size: 2.2rem;
+      color: rgba(0,0,0,0.06);
+      font-weight:800;
+      pointer-events:none;
+      white-space:nowrap;
+      z-index: 1030;
+      user-select:none;
+    }
+
+    /* intro cards */
+    .intro-cards { display:flex; gap:1rem; align-items:stretch; justify-content:center; flex-wrap:wrap; margin-bottom:1rem; }
+    .intro-card { width: 260px; min-height:140px; display:flex; flex-direction:column; justify-content:space-between; }
+    .intro-icon { font-size:2.6rem; margin-bottom: .6rem; opacity:.95; }
+    .audio-fallback { display:inline-flex; gap:.5rem; align-items:center; }
+
+    /* admin scan form small tweaks */
+    .scan-input { font-size:1.1rem; letter-spacing: .08rem; padding:.5rem .6rem; }
+    .sr-only-focusable:focus { outline: 3px solid rgba(111,66,193,.18); outline-offset:2px; }
+
+    @media (max-width:575.98px){ .intro-cards { flex-direction:column; } .intro-card { width:100%; } }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header class="site-header">
+      <div class="brand">
+        <img src="images/ispsclogo.png" alt="ISPSC Logo" onerror="this.style.display='none'">
+        <div>
+          <h1>Ilocos Sur Polytechnic State College</h1>
+          <small>Committed to academic excellence & community service</small>
+        </div>
+      </div>
+
+      <div class="d-none d-md-flex align-items-center gap-2">
+        <!-- Notifications dropdown-hover -->
+        <div class="dropdown-hover" id="notifWrapper">
+          <button id="notifBtn" class="btn btn-sm btn-outline-light" title="Notifications" aria-haspopup="true" aria-expanded="false">
+            <i class="bi bi-bell"></i>
+          </button>
+          <div class="dropdown-panel" id="notifPanel" role="menu" aria-labelledby="notifBtn">
+            <div class="header">Notifications</div>
+            <a href="#" class="item" role="menuitem">✅ Payment confirmed — Order #234</a>
+            <a href="#" class="item" role="menuitem">💬 New message from Admin</a>
+            <a href="#" class="item" role="menuitem">📢 System maintenance tonight</a>
+            <div style="height:6px"></div>
+            <a href="#" class="item text-muted small" role="menuitem">View all notifications</a>
+          </div>
+        </div>
+
+        <!-- Settings dropdown-hover -->
+        <div class="dropdown-hover" id="settingsWrapper">
+          <button id="settingsBtn" class="btn btn-sm btn-outline-light" title="Settings" aria-haspopup="true" aria-expanded="false">
+            <i class="bi bi-gear"></i>
+          </button>
+          <div class="dropdown-panel" id="settingsPanel" role="menu" aria-labelledby="settingsBtn">
+            <div class="header">Account</div>
+            <a href="#" class="item" role="menuitem">👤 Profile</a>
+            <a href="#" class="item" role="menuitem">⚙️ Settings</a>
+            <a href="#" class="item" role="menuitem">🔒 Login</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="content-area container-fluid">
+      <aside class="col-left">
+        <div class="panel">
+          <div class="card menu-card shadow-sm">
+            <div class="card-body p-2">
+              <nav class="nav flex-column" aria-label="Main navigation">
+                <a href="#overview" class="nav-link active" data-target="overview"><i class="bi bi-building-fill"></i> Overview</a>
+                <a href="#vision" class="nav-link" data-target="vision"><i class="bi bi-eye-fill"></i> Vision</a>
+                <a href="#mission" class="nav-link" data-target="mission"><i class="bi bi-flag-fill"></i> Mission</a>
+                <a href="#goals" class="nav-link" data-target="goals"><i class="bi bi-list-check"></i> Goals & Objectives</a>
+                <a href="#campuses" class="nav-link" data-target="campuses"><i class="bi bi-geo-alt-fill"></i> Campuses</a>
+              </nav>
+            </div>
+          </div>
+
+          <div class="card mt-3 shadow-sm p-2 text-center">
+            <h6 class="mb-1">Quick Facts</h6>
+            <p class="small text-muted mb-0">Six campuses · Multi-disciplinary programs · Research & extension</p>
+          </div>
+        </div>
+      </aside>
+
+      <main class="col-center">
+        <div class="panel">
+          <section id="overview" class="page-section active">
+            <div class="card card-hero p-4 mb-3 shadow-sm" id="aboutCard" tabindex="0" aria-describedby="about-desc">
+              <div class="d-flex justify-content-between align-items-start">
+                <div>
+                  <h2 class="h4 mb-1">About ISPSC</h2>
+                  <p id="about-desc" class="mb-0">ISPSC is a comprehensive six-campus institution of higher learning mandated to give professional and technical training both in the undergraduate and graduate levels in fields such as economics, agriculture, engineering, education, management and more. Santa Maria, Candon City, Narvacan, Santiago, Tagudin, Cervantes.</p>
+                </div>
+                <div class="text-end">
+                  <small class="text-white-50">Fostering research & technical education</small>
+                </div>
+              </div>
+            </div>
+
+            <div class="card shadow-sm mb-3">
+              <div class="card-body">
+                <h5 class="card-title"><i class="bi bi-info-circle-fill me-2"></i> Quick summary</h5>
+                <p class="card-text">Resize the browser or tap any menu item to show that single page section. Desktop keeps internal column scrolling; mobile stacks naturally and the page scrolls as expected.</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="vision" class="page-section">
+            <div class="card shadow-sm mb-3">
+              <div class="card-body">
+                <h3 class="card-title"><i class="bi bi-eye-fill me-2"></i> Vision</h3>
+                <p>To be a leading institution in developing professionals and leaders who contribute to regional and national development.</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="mission" class="page-section">
+            <div class="card shadow-sm mb-3">
+              <div class="card-body">
+                <h3 class="card-title"><i class="bi bi-rocket-fill me-2"></i> Mission</h3>
+                <p>Provide quality professional and technical education, promote research and innovation, and extend services to communities.</p>
+              </div>
+            </div>
+          </section>
+
+          <section id="goals" class="page-section">
+            <div class="card shadow-sm mb-3">
+              <div class="card-body">
+                <h3 class="card-title"><i class="bi bi-list-check me-2"></i> Goals & Objectives</h3>
+                <ul>
+                  <li>Deliver high-quality instruction and training.</li>
+                  <li>Advance research in science and technology.</li>
+                  <li>Promote community extension and partnerships.</li>
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          <section id="campuses" class="page-section">
+            <div class="card shadow-sm mb-3">
+              <div class="card-body">
+                <h3 class="card-title"><i class="bi bi-geo-fill me-2"></i> Campuses</h3>
+                <p>Santa Maria, Candon City, Narvacan, Santiago, Tagudin, Cervantes.</p>
+              </div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <aside class="col-right">
+        <div class="panel">
+          <div class="aside">
+            <h5 class="mb-1">What?</h5>
+            <p class="small mb-2">ISPSC is a comprehensive college in Ilocos Sur.</p>
+
+            <h5 class="mb-1">Where?</h5>
+            <p class="small mb-2">in Sta. Maria, Ilocos Sur.</p>
+
+            <h5 class="mb-1">How?</h5>
+            <p class="small mb-0">Serves students across six campuses in the province.</p>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <footer class="site-footer">
+      <div><strong>ISPSC</strong> · Ilocos Sur Polytechnic State College</div>
+      <div><small>Mobile Responsive</small></div>
+    </footer>
+  </div>
+
+  <!-- Hidden (but present) audio element. Source as requested. -->
+  <audio id="introAudio" preload="auto" autoplay playsinline src="sounds/ispsc.mp3"></audio>
+
+  <!-- Intro modal -->
+  <div class="modal fade" id="introModal" tabindex="-1" aria-labelledby="introLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content position-relative overflow-hidden">
+        <div class="modal-body py-4" style="position:relative;">
+          <div class="modal-watermark">System made by Christian Jann Lagadan</div>
+
+          <h5 id="introLabel" class="mb-3 text-center">Welcome</h5>
+
+          <!-- Primary choice cards -->
+          <div id="introChoices" class="intro-cards">
+            <div class="card intro-card shadow-sm text-center">
+              <div class="card-body d-flex flex-column">
+                <div>
+                  <i class="bi bi-person-circle intro-icon text-primary"></i>
+                  <h6 class="mb-1">Login as Guest</h6>
+                  <p class="small text-muted mb-3">Quick access with limited features.</p>
+                </div>
+                <div>
+                  <button id="btnGuest" class="btn btn-outline-primary w-100">Continue as Guest</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="card intro-card shadow-sm text-center">
+              <div class="card-body d-flex flex-column">
+                <div>
+                  <i class="bi bi-shield-lock-fill intro-icon text-white" style="background:var(--accent); padding:.35rem; border-radius:.6rem;"></i>
+                  <h6 class="mb-1">Login as Admin</h6>
+                  <p class="small text-muted mb-3">Scan your admin code using a barcode scanner (keyboard-emulation).</p>
+                </div>
+                <div>
+                  <button id="btnAdmin" class="btn btn-primary w-100">Scan Admin Code</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Admin scan form (hidden initially). When admin clicked, we show this instead) -->
+          <div id="adminScanArea" style="display:none;">
+            <div class="text-center mb-3">
+              <i class="bi bi-upc-scan" style="font-size:2.4rem;color:var(--accent)"></i>
+              <h6 class="mt-2">Scan admin code</h6>
+              <p class="small text-muted mb-0">Use your barcode scanner (it types the code + Enter). Any code is accepted for this demo.</p>
+            </div>
+
+            <!-- The visible input helps debugging, but many scanners write directly to focused input -->
+            <form id="scanForm" class="d-flex gap-2 align-items-center" autocomplete="off" onsubmit="return false;">
+              <input id="scanInput" class="form-control scan-input" type="text" placeholder="Scan code here..." inputmode="numeric" autocomplete="off" autofocus>
+              <button id="scanSubmit" class="btn btn-primary">Enter</button>
+            </form>
+
+            <div class="small text-muted mt-2">Tip: position the cursor in the input, then scan — the scanner will type quickly and send Enter.</div>
+
+            <div class="d-flex justify-content-end mt-3">
+              <button id="adminBack" class="btn btn-sm btn-secondary">Back</button>
+            </div>
+          </div>
+
+          <div class="d-flex justify-content-between align-items-center small text-muted mt-3">
+            <div class="audio-fallback">
+              <span id="audioStatus">Attempting to play audio…</span>
+              <button id="audioPlayFallback" class="btn btn-sm btn-outline-secondary ms-2" style="display:none;">Play audio</button>
+            </div>
+            <div>
+              <button class="btn btn-sm btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast for guest/admin confirmation -->
+  <div class="position-fixed bottom-0 end-0 p-3" style="z-index:1200">
+    <div id="actionToast" class="toast align-items-center text-bg-light border shadow-sm" role="alert" aria-live="polite" aria-atomic="true">
+      <div class="d-flex">
+        <div class="toast-body" id="actionToastBody">Action performed</div>
+        <button type="button" class="btn-close me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    (function(){
+      // ---------- Section navigation (left/right) ----------
+      const sectionOrder = ['overview','vision','mission','goals','campuses'];
+      function showSection(id, options = {updateHistory: true}){
+        document.querySelectorAll('.page-section').forEach(s=>s.classList.remove('active'));
+        const sec = document.getElementById(id);
+        if(sec) sec.classList.add('active');
+
+        document.querySelectorAll('.nav-link').forEach(a=>a.classList.remove('active'));
+        const link = document.querySelector('.nav-link[data-target="'+id+'"]');
+        if(link) link.classList.add('active');
+
+        if(options.updateHistory) {
+          history.replaceState(null, '', '#'+id);
+        }
+      }
+      document.querySelectorAll('.nav-link').forEach(a=>{
+        a.addEventListener('click', function(e){
+          e.preventDefault();
+          const t = this.getAttribute('data-target') || 'overview';
+          showSection(t);
+          if(window.innerWidth < 768){
+            const top = document.querySelector('.content-area').getBoundingClientRect().top + window.scrollY;
+            window.scrollTo({top: top - 12, behavior: 'smooth'});
+          }
+        });
+      });
+      const initial = location.hash ? location.hash.replace('#','') : 'overview';
+      showSection(document.getElementById(initial) ? initial : 'overview');
+
+      document.addEventListener('keydown', function(e){
+        if(['ArrowLeft','ArrowRight'].includes(e.key)){
+          const tag = document.activeElement && document.activeElement.tagName.toLowerCase();
+          if(tag === 'input' || tag === 'textarea' || document.activeElement.isContentEditable) return;
+          e.preventDefault();
+          const active = document.querySelector('.page-section.active');
+          const currentId = active ? active.id : 'overview';
+          const idx = sectionOrder.indexOf(currentId);
+          if(idx === -1) return;
+          if(e.key === 'ArrowRight'){
+            const next = sectionOrder[(idx + 1) % sectionOrder.length];
+            showSection(next);
+          } else if(e.key === 'ArrowLeft'){
+            const prev = sectionOrder[(idx - 1 + sectionOrder.length) % sectionOrder.length];
+            showSection(prev);
+          }
+        }
+      });
+
+      // ---------- Header dropdown hover logic ----------
+      function attachHoverDropdown(wrapperId, btnId, panelId){
+        const wrapper = document.getElementById(wrapperId);
+        const btn = document.getElementById(btnId);
+        const panel = document.getElementById(panelId);
+        if(!wrapper || !btn || !panel) return;
+
+        let hideTimer = null;
+        function show(){ if(hideTimer){ clearTimeout(hideTimer); hideTimer = null; } panel.classList.add('show'); btn.setAttribute('aria-expanded','true'); }
+        function hide(){ panel.classList.remove('show'); btn.setAttribute('aria-expanded','false'); }
+        function scheduleHide(delay = 180){ if(hideTimer) clearTimeout(hideTimer); hideTimer = setTimeout(()=>{ if(wrapper.matches(':hover') || panel.matches(':hover')) return; hide(); }, delay); }
+
+        wrapper.addEventListener('mouseenter', show);
+        wrapper.addEventListener('mouseleave', ()=> scheduleHide(140));
+        panel.addEventListener('mouseenter', ()=> { if(hideTimer){ clearTimeout(hideTimer); hideTimer = null; }});
+        panel.addEventListener('mouseleave', ()=> scheduleHide(140));
+
+        btn.addEventListener('click', function(e){
+          e.preventDefault();
+          if(panel.classList.contains('show')) hide(); else show();
+        });
+
+        document.addEventListener('keydown', function(e){
+          if(e.key === 'Escape') hide();
+        });
+
+        document.addEventListener('click', function(ev){
+          if(!wrapper.contains(ev.target)){
+            hide();
+          }
+        });
+      }
+      attachHoverDropdown('notifWrapper','notifBtn','notifPanel');
+      attachHoverDropdown('settingsWrapper','settingsBtn','settingsPanel');
+
+      // ---------- Audio autoplay (best effort) ----------
+      const introAudio = document.getElementById('introAudio');
+      const audioStatus = document.getElementById('audioStatus');
+      const audioPlayFallback = document.getElementById('audioPlayFallback');
+      let autoplaySucceeded = false;
+      const MAX_RETRIES = 20;
+      const RETRY_INTERVAL = 500;
+      let attempts = 0;
+
+      function fadeInAudio(targetVolume = 0.9, duration = 700) {
+        try {
+          introAudio.volume = 0.01;
+          const stepTime = 50;
+          const steps = Math.max(1, Math.floor(duration / stepTime));
+          let step = 0;
+          const timer = setInterval(() => {
+            step++;
+            introAudio.volume = Math.min(targetVolume, (step/steps) * targetVolume);
+            if(step >= steps) {
+              clearInterval(timer);
+              introAudio.volume = targetVolume;
+            }
+          }, stepTime);
+        } catch(e){}
+      }
+
+      async function tryUnlockAudioContext() {
+        try {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          if(!AudioContext) return false;
+          const ctx = new AudioContext();
+          if (ctx.state === 'suspended') {
+            await ctx.resume().catch(()=>{});
+          }
+          try {
+            const o = ctx.createOscillator();
+            const g = ctx.createGain();
+            g.gain.value = 0;
+            o.connect(g);
+            g.connect(ctx.destination);
+            o.start();
+            o.stop(ctx.currentTime + 0.001);
+          } catch(e){}
+          setTimeout(()=> { try { ctx.close(); } catch(e){} }, 2000);
+          return ctx.state !== 'suspended';
+        } catch(e){ return false; }
+      }
+
+      async function attemptPlay(){
+        attempts++;
+        try {
+          // ensure unmuted
+          try { introAudio.muted = false; } catch(e){}
+          const p = introAudio.play();
+          if(p !== undefined){
+            await p;
+          }
+          autoplaySucceeded = true;
+          audioStatus.textContent = 'Playing audio';
+          audioPlayFallback.style.display = 'none';
+          fadeInAudio(0.9, 700);
+          return true;
+        } catch(err) {
+          audioStatus.textContent = 'Autoplay blocked';
+          audioPlayFallback.style.display = 'inline-block';
+          return false;
+        }
+      }
+
+      async function tryPlayWithRetries(){
+        try { introAudio.muted = false; introAudio.volume = 0.01; } catch(e){}
+        if(await attemptPlay()) return;
+        await tryUnlockAudioContext();
+        const intervalId = setInterval(async () => {
+          if(autoplaySucceeded || attempts >= MAX_RETRIES){
+            clearInterval(intervalId);
+            if(!autoplaySucceeded) console.warn('[audio] autoplay blocked after retries.');
+            return;
+          }
+          await tryUnlockAudioContext();
+          await attemptPlay();
+        }, RETRY_INTERVAL);
+      }
+
+      window.addEventListener('load', ()=> {
+        setTimeout(()=> { tryPlayWithRetries(); }, 120);
+      });
+
+      // attempt again on first user gesture
+      const gestureHandler = async () => {
+        if(!autoplaySucceeded){
+          await tryUnlockAudioContext();
+          await attemptPlay();
+        }
+        window.removeEventListener('click', gestureHandler);
+        window.removeEventListener('touchstart', gestureHandler);
+        window.removeEventListener('keydown', gestureHandler);
+      };
+      window.addEventListener('click', gestureHandler, {passive:true});
+      window.addEventListener('touchstart', gestureHandler, {passive:true});
+      window.addEventListener('keydown', gestureHandler, {passive:true});
+
+      audioPlayFallback.addEventListener('click', function(){
+        attemptPlay();
+      });
+
+      // Stop audio when the intro modal is closed (per user request)
+      const introModalElem = document.getElementById('introModal');
+      const introModal = new bootstrap.Modal(introModalElem, { keyboard: true, backdrop: 'static' });
+      introModalElem.addEventListener('hidden.bs.modal', function(){
+        try {
+          introAudio.pause();
+          introAudio.currentTime = 0;
+        } catch(e){}
+      });
+
+      // ---------- Intro card behaviors ----------
+      const btnGuest = document.getElementById('btnGuest');
+      const btnAdmin = document.getElementById('btnAdmin');
+      const introChoices = document.getElementById('introChoices');
+      const adminScanArea = document.getElementById('adminScanArea');
+      const adminBack = document.getElementById('adminBack');
+      const scanInput = document.getElementById('scanInput');
+      const scanSubmit = document.getElementById('scanSubmit');
+      const scanForm = document.getElementById('scanForm');
+      const actionToastEl = document.getElementById('actionToast');
+      const actionToast = new bootstrap.Toast(actionToastEl, { delay: 1800 });
+      const actionToastBody = document.getElementById('actionToastBody');
+
+      // Show modal on load (small delay)
+      window.addEventListener('load', ()=> { setTimeout(()=> introModal.show(), 220); });
+
+      if(btnGuest){
+        btnGuest.addEventListener('click', function(){
+          // stop audio & close modal
+          try { introAudio.pause(); introAudio.currentTime = 0; } catch(e){}
+          introModal.hide();
+          actionToastBody.textContent = 'Continuing as Guest';
+          actionToast.show();
+        });
+      }
+
+      // Admin: show scanning area inside the same modal
+      if(btnAdmin){
+        btnAdmin.addEventListener('click', function(){
+          introChoices.style.display = 'none';
+          adminScanArea.style.display = 'block';
+          // focus the input so barcode scanner goes into it
+          setTimeout(()=> {
+            try { scanInput.focus(); scanInput.select(); } catch(e){}
+          }, 120);
+        });
+      }
+
+      if(adminBack){
+        adminBack.addEventListener('click', function(){
+          adminScanArea.style.display = 'none';
+          introChoices.style.display = 'flex';
+          setTimeout(()=> {
+            try { document.getElementById('btnAdmin').focus(); } catch(e){}
+          }, 80);
+        });
+      }
+
+      // When admin submits (scanner sends Enter), accept any code and redirect to main page
+      async function acceptAdminCode(code){
+        // stop audio & close modal
+        try { introAudio.pause(); introAudio.currentTime = 0; } catch(e){}
+        introModal.hide();
+        actionToastBody.textContent = 'Admin code accepted — redirecting...';
+        actionToast.show();
+
+        // small delay for UX then redirect to main page (change target as you like)
+        setTimeout(()=> {
+          // Redirect to main page. Update this path to your actual main page if different.
+          window.location.href = 'ispsc.html#vision';
+        }, 700);
+      }
+
+      // Support pressing Enter or clicking button
+      scanSubmit.addEventListener('click', function(e){
+        e.preventDefault();
+        const code = (scanInput.value || '').trim();
+        acceptAdminCode(code || 'SCANNED_SAMPLE');
+      });
+
+      // Also handle scanner input: many scanners add a trailing Enter (keyCode 13)
+      scanInput.addEventListener('keydown', function(e){
+        if(e.key === 'Enter'){
+          e.preventDefault();
+          const code = (scanInput.value || '').trim();
+          acceptAdminCode(code || 'SCANNED_SAMPLE');
+        }
+      });
+
+      // Prevent accidental form submission of page
+      scanForm.addEventListener('submit', function(e){
+        e.preventDefault();
+        const code = (scanInput.value || '').trim();
+        acceptAdminCode(code || 'SCANNED_SAMPLE');
+      });
+
+      // reflect hash changes (optional)
+      window.addEventListener('hashchange', ()=>{
+        const id = location.hash ? location.hash.replace('#','') : 'overview';
+        if(document.getElementById(id)) showSection(id, {updateHistory:false});
+      });
+
+    })();
+  </script>
+</body>
+</html>
+
+
+
